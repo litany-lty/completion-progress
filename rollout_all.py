@@ -20,7 +20,7 @@ H = Path.home()
 SRC = Path(__file__).resolve().parent
 RUNTIME = ["SKILL.md", "estimate.py", "reference.md"]
 SKILL_DIRS = [
-    ".claude", ".codex", ".gemini", ".gemini/config", ".agents",
+    ".claude", ".codex", ".gemini", ".gemini/config", ".cursor", ".agents",
     ".junie", ".copilot", ".trae", ".minimax", ".openclaw", ".hermes",
 ]
 # (规则文件相对家目录路径, 对应的技能目录相对家目录路径或 None)
@@ -28,12 +28,16 @@ RULE_TARGETS = [
     (".codex/AGENTS.md", ".codex/skills/completion-progress"),
     (".gemini/GEMINI.md", ".gemini/skills/completion-progress"),
     (".claude/CLAUDE.md", ".claude/skills/completion-progress"),
+    (".cursor/AGENTS.md", ".cursor/skills/completion-progress"),
     (".config/opencode/AGENTS.md", None),
     (".dsh/AGENTS.md", None),
     (".aider/CONVENTIONS.md", None),
     (".minimax/AGENTS.md", ".minimax/skills/completion-progress"),
     (".trae/user_rules.md", ".trae/skills/completion-progress"),
     (".hermes/AGENTS.md", ".hermes/skills/completion-progress"),
+    (".openclaw/workspace/AGENTS.md", ".openclaw/skills/completion-progress"),
+    (".copilot/copilot-instructions.md", ".copilot/skills/completion-progress"),
+    (".junie/guidelines.md", ".junie/skills/completion-progress"),
 ]
 sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
 

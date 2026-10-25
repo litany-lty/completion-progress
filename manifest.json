@@ -59,8 +59,8 @@
   {
    "path": "install.py",
    "role": "doc",
-   "sha256": "5eccec92ffafb3e5049b941c504ec3815445a9db9d5d5c39a6d465ddac87973b",
-   "bytes": 7235
+   "sha256": "56bfaee23a478f282ed47b69b95d21f477a8ca2a2acf313a229cee433b11d4a7",
+   "bytes": 7289
   },
   {
    "path": "make_manifest.py",
@@ -77,8 +77,8 @@
   {
    "path": "rollout_all.py",
    "role": "doc",
-   "sha256": "8ac2a5bf1a1c65b263ded3d26f35a05bfa59592ea7c4f343f312d19c1dbf6b3a",
-   "bytes": 6172
+   "sha256": "54ec0c1e89149f13931daa8e3aa8a595e60446e0fafba6fa3376fa75c7becad5",
+   "bytes": 6475
   },
   {
    "path": "studies/backtest_real.py",

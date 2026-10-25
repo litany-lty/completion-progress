@@ -33,6 +33,7 @@ CANDIDATES = {
     "claude": "~/.claude/skills/completion-progress",
     "codex": "~/.codex/skills/completion-progress",
     "gemini": "~/.gemini/skills/completion-progress",
+    "cursor": "~/.cursor/skills/completion-progress",
     "agents": "~/.agents/skills/completion-progress",
     "gemini-config": "~/.gemini/config/skills/completion-progress",
     "junie": "~/.junie/skills/completion-progress",
