@@ -59,7 +59,7 @@ python3 install.py --print-rule
 凡需实质执行（改文件、写文档、跑命令/测试/构建、发布推送、多步排查，≥2 步或预计 ≥1 分钟）均启用；仅纯问答或单次只读查询不启用。只观察，不新增任务、不改业务文件、不写进交付物。
 - 规则全文：/your/path/to/completion-progress/SKILL.md
 - 脚本：python3 /your/path/to/completion-progress/estimate.py plan|progress|status|deliver|abandon|audit
-- 三必报硬约束：① 开工第 1 个工具调用必跑 plan（支持流式输出时先贴【进度分析：…】再执行）；② 每步真正完成时立即 progress --done（不攒到最后，should_report 为真即贴）；③ 收尾必跑 deliver 并在回复末尾贴汇总行（单回合合并输出时，回复开头贴 plan 行、末尾贴 deliver 行）
+- 三必报硬约束（禁止静默调工具吞汇报）：① 开工第 1 个工具调用必跑 plan，并在发起第 1 步工具调用的同轮消息正文里先向用户贴出【进度分析：…】；② 每步分轮执行（禁止把多步和 deliver 串成一条命令），每步完成立即跑 progress --done，若 should_report 为真必须在发起下一步工具调用的同轮消息正文里向用户贴出【进度汇报：…】（严禁空文本静默调工具）；③ 收尾必跑 deliver 并在最终回复末尾贴汇总行
 - 精度要点：等待用 --block；明显超时加 --cause；--model 写真实型号（不写“当前会话”）
 - 共享历史：默认 ~/.local/state/completion-progress（同机 agent 共用）；宿主沙箱可用 --state 指定
 <!-- completion-progress:end -->
