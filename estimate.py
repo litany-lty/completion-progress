@@ -541,8 +541,10 @@ def base_stats(steps, s2: float) -> dict:
 
 
 def tau2_from(tasks, s2: float) -> float:
-    """任务级偏移方差 τ²（σ² 的一部分）：先验 σ²/2 与任务间经验值按 n/(n+3) 加权，避免 3 个任务就跳变。"""
-    rows = [t for t in tasks if t["resid_k"] > 0 and t.get("status") != "abandoned"]
+    """任务级偏移方差 τ²（σ² 的一部分）：先验 σ²/2 与任务间经验值按 n/(n+3) 加权，避免 3 个任务就跳变。
+    过滤 |resid_mean| > 1.5 的历史微步/空闲污染行，避免把 τ² 顶到上限导致开工区间恒 >3×。
+    """
+    rows = [t for t in tasks if t["resid_k"] > 0 and t.get("status") != "abandoned" and abs(t.get("resid_mean", 0.0)) <= 1.5]
     if len(rows) < 3:
         return s2 / 2
     means = [t["resid_mean"] for t in rows]
@@ -656,7 +658,9 @@ def calib_width(steps, window: int = 200):
 
 
 def apply_calib(fc: dict, width, tau2: float) -> dict:
-    """把 v3 的参数化区间换成经验宽度；外推步骤保留更宽者（范围外更不确定）。"""
+    """把 v3 的参数化区间换成经验宽度；外推步骤保留更宽者（范围外更不确定）。
+    sd_mc 保留融合 base 后的后验步内标准差上限，避免历史粗粒度残差把已给 base_min 的步骤全部顶成 >3×（“至少 N 分钟”）。
+    """
     if not fc or not width or fc.get("ln") is None:
         return fc
     lo, hi = fc["ln"] + width[0], fc["ln"] + width[1]
@@ -664,7 +668,9 @@ def apply_calib(fc: dict, width, tau2: float) -> dict:
         lo = min(lo, math.log(fc["range_sec"][0]))
         hi = max(hi, math.log(fc["range_sec"][1]))
     var = ((hi - lo) / (2 * Z80)) ** 2
-    return dict(fc, range_sec=[math.exp(lo), math.exp(hi)], sd_mc=math.sqrt(max(0.25 * var, var - tau2)), calib=True)
+    sd_emp = math.sqrt(max(0.25 * var, var - tau2))
+    sd_mc = max(fc["sd_mc"], sd_emp) if fc.get("extrap") else min(fc["sd_mc"], sd_emp)
+    return dict(fc, range_sec=[math.exp(lo), math.exp(hi)], sd_mc=sd_mc, calib=True)
 
 
 # ---------------------------------------------------------------- 状态
@@ -915,11 +921,11 @@ def remaining_text(state: dict, now: float, totals, with_tz: bool, narrow_after:
     return f"{s}，{eta_text(now, round_sec(lo, unit), round_sec(hi, unit), with_tz)}"
 
 
-def fmt_elapsed(sec: float) -> str:
-    if sec < 30:
+def fmt_elapsed(sec: float, exact: bool = False) -> str:
+    if sec < 30 and not exact:
         return "刚开始"
     if sec < 60:
-        return f"{round(sec)} 秒"
+        return f"{max(1, round(sec))} 秒"
     if sec < 3600:
         m, s = divmod(round(sec), 60)
         return f"{m} 分 {s:02d} 秒" if sec < 600 and s else f"{m} 分钟"
@@ -954,11 +960,11 @@ def fmt_range_en(lo: float, hi: float, unit: int) -> str:
     return f"~{a.split(' ')[0]}–{b}"
 
 
-def fmt_elapsed_en(sec: float) -> str:
-    if sec < 30:
+def fmt_elapsed_en(sec: float, exact: bool = False) -> str:
+    if sec < 30 and not exact:
         return "just started"
     if sec < 60:
-        return f"{round(sec)} s"
+        return f"{max(1, round(sec))} s"
     if sec < 3600:
         m, s = divmod(round(sec), 60)
         return f"{m} min {s:02d} s" if sec < 600 and s else f"{m} min"
@@ -1058,24 +1064,24 @@ def progress_line(state: dict, now: float, totals, per_step, elapsed: float, pct
 def deliver_line(state: dict, now: float, elapsed: float) -> str:
     first = state["plan_history"][0]
     if en():
-        parts = [f"{st['name']} {fmt_elapsed_en(st['actual_sec'])}" for st in state["steps"]]
+        parts = [f"{st['name']} {fmt_elapsed_en(st['actual_sec'], exact=True)}" for st in state["steps"]]
         planned = ""
         if first.get("total"):
             planned = f", planned {fmt_range_en(first['total'][0], first['total'][2], state['unit_min']).lstrip('~')}"
         when = f"delivered {clock(now, now)} ({tz_label()})" if _TZ["known"] else "delivered"
         return (f"> **[Progress: all {len(parts)}/{len(parts)} steps done, {when} | "
-                f"steps: {', '.join(parts)}{planned} | total: {fmt_elapsed_en(elapsed)}]**")
-    parts = [f"{st['name']} {fmt_elapsed(st['actual_sec'])}" for st in state["steps"]]
+                f"steps: {', '.join(parts)}{planned} | total: {fmt_elapsed_en(elapsed, exact=True)}]**")
+    parts = [f"{st['name']} {fmt_elapsed(st['actual_sec'], exact=True)}" for st in state["steps"]]
     planned = ""
     if first.get("total"):
         planned = f"，开工时预计 {fmt_range(first['total'][0], first['total'][2], state['unit_min']).replace('约 ', '')}"
     when = f"{clock(now, now)} 交付（{tz_label()}）" if _TZ["known"] else "已交付"
     return (f"> **【进度汇报：{len(parts)}/{len(parts)} 步全部完成，{when}｜各步：{'、'.join(parts)}{planned}"
-            f"｜用时：{fmt_elapsed(elapsed)}】**")
+            f"｜用时：{fmt_elapsed(elapsed, exact=True)}】**")
 
 
 def decide_report(state: dict, now: float, rem_mid: float, ev: str):
-    """顺序：基线/交付/阻塞 总是报 → 预计明显变化 总是报 → 尾部不报 → 冷却期不报 → 事件报。"""
+    """顺序：基线/交付/阻塞 总是报 → 预计明显变化 总是报 → 步骤完成/重划范围 报（防连击）→ 周期轮询受尾部与冷却约束。"""
     last = state.get("last_report")
     if ev in ("plan", "deliver", "block"):
         return True, None
@@ -1090,11 +1096,16 @@ def decide_report(state: dict, now: float, rem_mid: float, ev: str):
                 note = f"比上次预计{'晚' if delta > 0 else '早'}约 {fmt_dur(abs(delta), state['unit_min']).replace('约 ', '')}"
     if note:
         return True, note
+    if ev in ("done", "rescope"):
+        # 实质步骤完成或范围变化：只要还有未完步骤（rem_mid > 0）且非同秒连发，均允许汇报进度
+        if rem_mid <= 0 or (last and now - last["t"] < 5):
+            return False, None
+        return True, None
     if rem_mid < TAIL_SEC:
         return False, None
     if last and now - last["t"] < REPORT_GAP:
         return False, None
-    return ev in ("done", "rescope"), None
+    return False, None
 
 
 # ---------------------------------------------------------------- 命令

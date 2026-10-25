@@ -147,6 +147,18 @@ def main() -> int:
         check("audit < 5 秒且含 data_quality / base_bias_by_family / shadow", rc == 0 and time.time() - t0 < 5
               and "data_quality" in out and "gemini" in out.get("base_bias_by_family", {}) and "shadow" in out,
               f"{time.time() - t0:.1f}s keys={list(out)[:3]}")
+        # 9 中短任务过程汇报、秒级交付显示与 τ² 离群过滤
+        rc, p_out = run(["plan", "--session", "short", "--task", "push", "--model", "claude",
+                         "--steps", '[{"name":"检查","type":"verify","base_min":1},{"name":"推送","type":"deliver","base_min":1}]'], st, T0 + 9.5e6)
+        rc, d1_out = run(["progress", "--session", "short", "--task", "push", "--done", "s1"], st, T0 + 9.5e6 + 18)
+        check("中短任务完成步骤（18s）仍主动汇报进度", d1_out["should_report"] is True and "已完成 1/2 步" in d1_out["line"])
+        run(["progress", "--session", "short", "--task", "push", "--done", "s2"], st, T0 + 9.5e6 + 32)
+        rc, del_out = run(["deliver", "--session", "short", "--task", "push"], st, T0 + 9.5e6 + 32)
+        check("秒级完成步骤在 deliver 中显示具体秒数而非刚开始",
+              "18 秒" in del_out["line"] and "14 秒" in del_out["line"] and "刚开始" not in del_out["line"], del_out["line"])
+        noisy_tasks = [dict(resid_k=3, resid_mean=0.1), dict(resid_k=3, resid_mean=-0.1), dict(resid_k=3, resid_mean=0.05),
+                       dict(resid_k=2, resid_mean=-4.2)]
+        check("τ² 过滤 |resid_mean|>1.5 的微步污染任务", est.tau2_from(noisy_tasks, 0.6) < 0.25)
     print(f"\n{len(FAILS)} FAILED: {FAILS}" if FAILS else "\nALL PASS")
     return 1 if FAILS else 0
 

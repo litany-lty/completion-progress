@@ -46,13 +46,13 @@ def render_block(skill_rel: str | None) -> str:
     )
     return f"""<!-- completion-progress:begin -->
 ## 进度与预计（completion-progress 3.1）
-预计超过 3 分钟的实质工作启用；只观察，不新增任务、不改业务文件、不写进交付物。
+凡需实质执行（改文件、写文档、跑命令/测试/构建、发布推送、多步排查，≥2 步或预计 ≥1 分钟）均启用；仅纯问答或单次只读查询不启用。只观察，不新增任务、不改业务文件、不写进交付物。
 - 规则全文：{(SRC / 'SKILL.md').as_posix()}
 {copy_line}
 - 脚本：python3 {(SRC / 'estimate.py').as_posix()} plan|progress|status|deliver|abandon|audit
-- 精度要点：每步真正完成时立即 --done；等待用 --block；明显超时加 --cause；--model 写真实型号（不写“当前会话”）
+- 三必报硬约束：① 开工第 1 个工具调用必跑 plan（支持流式输出时先贴【进度分析：…】再执行）；② 每步真正完成时立即 progress --done（不攒到最后，should_report 为真即贴）；③ 收尾必跑 deliver 并在回复末尾贴汇总行（单回合合并输出时，回复开头贴 plan 行、末尾贴 deliver 行）
+- 精度要点：等待用 --block；明显超时加 --cause；--model 写真实型号（不写“当前会话”）
 - 共享历史：默认 ~/.local/state/completion-progress（同机 agent 共用）；宿主沙箱可用 --state 指定
-- 只贴脚本返回的 line，且仅当 should_report 为真
 <!-- completion-progress:end -->"""
 
 

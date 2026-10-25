@@ -11,8 +11,8 @@
   {
    "path": "INSTALL.md",
    "role": "doc",
-   "sha256": "6a831488246d17dccc54356d29cc34d5c9510e8375da048a0c9944ab478b00fd",
-   "bytes": 8412
+   "sha256": "db1962aa1af269838f44267f809b002916d8f65a1bf7293e78678de5328a0b9c",
+   "bytes": 8829
   },
   {
    "path": "LICENSE",
@@ -35,14 +35,14 @@
   {
    "path": "README.md",
    "role": "doc",
-   "sha256": "43016cd3bc7167744f97af8ee236efcac9dff0728eec5722aa90ac0f5781425e",
-   "bytes": 15758
+   "sha256": "0c24165b866327203f259b6beff808333574df7df5306b119af6bf48e64584a8",
+   "bytes": 15967
   },
   {
    "path": "SKILL.md",
    "role": "runtime",
-   "sha256": "7fc0a6a433889479ab3630efeac3a09ba8653fb3e6782f816fd22c6b180ae706",
-   "bytes": 4234
+   "sha256": "1a94f0c9ed636e8b995cc45ac1609fb6652cbbadf7c27a1a67e7eaa5b12f283d",
+   "bytes": 5120
   },
   {
    "path": "env.sh",
@@ -53,8 +53,8 @@
   {
    "path": "estimate.py",
    "role": "runtime",
-   "sha256": "7ec54ebb38da59f859d5921552c0000c6bdfe459e8bbd9e67d8b3cf0c52d54f0",
-   "bytes": 93744
+   "sha256": "4ac3316dce89e5be59599bc71bccfaffe836dc6600d01f72fba9e54ab3dd30f7",
+   "bytes": 94621
   },
   {
    "path": "install.py",
@@ -77,8 +77,8 @@
   {
    "path": "rollout_all.py",
    "role": "doc",
-   "sha256": "392598cb9ffba69e5e44c477280b44082f989e440199cf9acf67b215e02bf112",
-   "bytes": 5755
+   "sha256": "8ac2a5bf1a1c65b263ded3d26f35a05bfa59592ea7c4f343f312d19c1dbf6b3a",
+   "bytes": 6172
   },
   {
    "path": "studies/backtest_real.py",
@@ -107,8 +107,8 @@
   {
    "path": "tests/test_v31.py",
    "role": "test",
-   "sha256": "ef543fb76d8c481e7ec965441d6b86c793ccbff1fb7974d4c8e259a7628b0036",
-   "bytes": 11220
+   "sha256": "9d08601074216420a53709458a33f3e1553c146a76569e9828ed6eca7050961e",
+   "bytes": 12516
   }
  ]
 }
