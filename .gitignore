@@ -1,0 +1,15 @@
+# Python 缓存
+__pycache__/
+*.py[cod]
+
+# 本机备份与运行状态（严禁提交个人历史样本与宿主路径记录）
+backups/
+state/history.jsonl
+state/model.json
+state/install-log.jsonl
+state/tasks/
+state/archive/
+
+# 系统与编辑器文件
+.DS_Store
+*.swp
